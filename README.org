@@ -110,7 +110,7 @@ io.print(s, d, i, rsum, rmin, rmax, ravg, ravgdbl, rnum, rcnt, rcntsim, rfst);
 
   -- select * from temp;
   select *, dsh.diff(s) as d from temp;
-  -- select *, dsh.win_fun_sum(d, i, three) from (select *, dsh.diff(s) as d, cast(3 as integer) as three from temp) as t;
+  -- select *, dsh.win_fun_sum(d, i, three) from (select *, dsh.diff(s) as d, cast(3 as integer) as three from temp) as t; -- Program contains errors.:(NONE).multiplex
 #+END_SRC
 
 #+RESULTS:
