@@ -32,22 +32,22 @@ d:bat[:bit] := batsql.diff(s);
 
 io.print(s, d, i);
 
-rsum:bat[:int] := dsh.win_fun_sum(d, i, 3:lng);
+rsum:bat[:int] := batdsh.win_fun_sum(d, i, 3:lng);
 
-rmin:bat[:int] := dsh.win_fun_min(d, i, 3:lng);
-rmax:bat[:int] := dsh.win_fun_max(d, i, 3:lng);
+rmin:bat[:int] := batdsh.win_fun_min(d, i, 3:lng);
+rmax:bat[:int] := batdsh.win_fun_max(d, i, 3:lng);
 
 # int avg with div
-ravg:bat[:int] := dsh.win_fun_avg(d, i, 3:lng);
+ravg:bat[:int] := batdsh.win_fun_avg(d, i, 3:lng);
 idbl := batcalc.dbl(i);
-ravgdbl:bat[:dbl] := dsh.win_fun_avg(d, idbl, 3:lng);
+ravgdbl:bat[:dbl] := batdsh.win_fun_avg(d, idbl, 3:lng);
 
 rnum:bat[:int] := batsql.row_number(d, d, nil:bit);
 
 # simulate count with row number
 rcntsim:bat[:int] := batcalc.min(3, rnum);
-rcnt:bat[:int] := dsh.win_fun_count(d, 3:lng);
+rcnt:bat[:int] := batdsh.win_fun_count(d, 3:lng);
 
-rfst:bat[:int] := dsh.win_fun_first_value(d, i, 3:lng);
+rfst:bat[:int] := batdsh.win_fun_first_value(d, i, 3:lng);
 
 io.print(s, d, i, rsum, rmin, rmax, ravg, ravgdbl, rnum, rcnt, rcntsim, rfst);
