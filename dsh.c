@@ -8,8 +8,17 @@
 
 /* monetdb_config.h must be the first include in each .c file */
 #include "monetdb_config.h"
+#include "mal.h"
+#include "mal_exception.h"
+
 #include "dsh.h"
 #include "dsh_impl.h"
+
+#ifdef WIN32
+#define dsh_export extern __declspec(dllexport)
+#else
+#define dsh_export extern
+#endif
 
 // FIXME seperate wrappers from implementation
 // FIXME support for hseqbase? or already supported?
@@ -39,7 +48,7 @@
     } while(0)
 
 /* segment-wise append, under the assumption of sortedness */
-char *
+dsh_export char *
 DSHoid_segment_append(bat *sideid, bat *lcandid, bat *rcandid, const bat * lid, const bat * rid)
 {
     BAT *s;
@@ -373,7 +382,7 @@ DSHoid_segment_append(bat *sideid, bat *lcandid, bat *rcandid, const bat * lid, 
     SPTR_LOOP( lptr < lend , APPEND(b, TYPE, * (TYPE *) lptr); lptr += sizeof(TYPE); , rptr < rend , APPEND(b, TYPE, * (TYPE *) rptr); rptr += sizeof(TYPE); ) \
     break;
 
-char *
+dsh_export char *
 DSHbitmerge(bat *res, const bat *side, const bat *left, const bat *right) {
     BAT * b;
     BAT * r;
@@ -551,7 +560,7 @@ DSHbitmerge(bat *res, const bat *side, const bat *left, const bat *right) {
 #undef BITMERGE_LOOP_SWITCH_ENTRY
 #undef SPTR_LOOP
 
-char *
+dsh_export char *
 DSHoid_segment_zip(bat *lcand, bat *rcand, const bat *left, const bat *right)
 {
     BAT *lc;
@@ -774,7 +783,7 @@ DSHoid_segment_zip(bat *lcand, bat *rcand, const bat *left, const bat *right)
 }
 
 /* should also be possible without intermediate candidate list, although it's not sure to pay off */
-char *
+dsh_export char *
 DSHreverse(bat *out, const bat *in)
 {
     /* works on every kind of BAT, since only the BAT descriptor is used for BATcount */
@@ -804,7 +813,7 @@ DSHreverse(bat *out, const bat *in)
     return MAL_SUCCEED;
 }
 
-char *
+dsh_export char *
 DSHoid_segment_reverse(bat *out, const bat *in)
 {
     BAT *i;
@@ -885,7 +894,7 @@ DSHoid_segment_reverse(bat *out, const bat *in)
 #define U_CONCAT_4(a,b,c,d) a##b##c##d
 #define WIN_FUN_STR(n) "dsh.win_fun_" #n
 #define WIN_FUN_PRE(name) \
-    str U_CONCAT_2(DSHwin_fun_,name) (bat *out, const bat *diff, const bat *in, const lng * wptr) \
+    dsh_export str U_CONCAT_2(DSHwin_fun_,name) (bat *out, const bat *diff, const bat *in, const lng * wptr) \
     { \
         BAT *o; \
         BAT *d; \
@@ -1087,7 +1096,7 @@ WIN_FUN_POST(avg)
 #undef WIN_FUN_ENTRY
 #undef WIN_FUN_POST
 
-str DSHwin_fun_first_value_any(BAT * o, const BAT * d, const BAT * i, const lng cnt, lng w)
+dsh_export str DSHwin_fun_first_value_any(BAT * o, const BAT * d, const BAT * i, const lng cnt, lng w)
 {
     lng pos;
     lng seg_start;
@@ -1144,7 +1153,7 @@ WIN_FUN_POST_NO_DEF
    created to avoid issues with branch prediction.
 
 */
-char *
+dsh_export char *
 DSHoid_segment_append2(bat *postproj, bat *lcandid, bat *rcandid, const bat * lid, const bat * rid)
 {
     BAT *pp;

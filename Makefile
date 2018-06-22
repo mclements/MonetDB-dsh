@@ -1,48 +1,38 @@
-.SUFFIXES: .in
-
-name     = MonetDB-rmath
-version  = `sed -n 's/^Version:[ \t]*\(.*\)/\1/p' MonetDB-rmath.spec`
+name     = MonetDB-dsh
+version  = `sed -n 's/^Version:[ \t]*\(.*\)/\1/p' MonetDB-dsh.spec`
 
 CC       = cc
-M4       = m4
-M4FLAGS  =
-M4SCRIPT =
 DBFARM   = ~/work/mydbfarm
 
 LIBDIR   = $(shell pkg-config --variable=libdir monetdb5)
-CFLAGS  += -g -Wall
+# CFLAGS  += -g -Wall
 CFLAGS  += $(shell pkg-config --cflags monetdb5)
-CFLAGS  += $(shell pkg-config --cflags libRmath)
 LDFLAGS += $(shell pkg-config --libs monetdb5)
-LDFLAGS += $(shell pkg-config --libs libRmath)
 
-all: lib_rmath.so
+all: lib_dsh.so
 
-.in:
-	${M4} ${M4FLAGS} ${M4SCRIPT} $< > $*
+lib_dsh.so: dsh.o dsh.mal 75_dsh.sql
+	$(CC) -fPIC -DPIC -o lib_dsh.so -shared dsh.o $(LDFLAGS) -Wl,-soname -Wl,lib_dsh.so
 
-lib_rmath.so: rmath.o rmath.mal 74_rmath.sql
-	$(CC) -fPIC -DPIC -o lib_rmath.so -shared rmath.o $(LDFLAGS) -Wl,-soname -Wl,lib_rmath.so
-
-rmath.o: rmath.c
-	$(CC) -fPIC -DPIC $(CFLAGS) -c rmath.c
+dsh.o: dsh.c
+	$(CC) -fPIC -DPIC $(CFLAGS) -c dsh.c
 
 clean:
-	rm -f *.o *.so rmath.mal 74_rmath.sql
+	rm -f *.o *.so
 
-install: lib_rmath.so rmath.mal 74_rmath.sql
+install: lib_dsh.so
 	mkdir -p $(DESTDIR)$(LIBDIR)/monetdb5/autoload $(DESTDIR)$(LIBDIR)/monetdb5/createdb
-	cp rmath.mal lib_rmath.so $(DESTDIR)$(LIBDIR)/monetdb5
-	cp 74_rmath.sql $(DESTDIR)$(LIBDIR)/monetdb5/createdb
-	cp 74_rmath.mal $(DESTDIR)$(LIBDIR)/monetdb5/autoload
+	cp dsh.mal lib_dsh.so $(DESTDIR)$(LIBDIR)/monetdb5
+	cp 75_dsh.sql $(DESTDIR)$(LIBDIR)/monetdb5/createdb
+	cp 75_dsh.mal $(DESTDIR)$(LIBDIR)/monetdb5/autoload
 
 uninstall:
-	rm $(DESTDIR)$(LIBDIR)/monetdb5/rmath.mal || true
-	rm $(DESTDIR)$(LIBDIR)/monetdb5/lib_rmath.so || true
-	rm $(DESTDIR)$(LIBDIR)/monetdb5/createdb/74_rmath.sql || true
-	rm $(DESTDIR)$(LIBDIR)/monetdb5/autoload/74_rmath.mal || true
+	rm $(DESTDIR)$(LIBDIR)/monetdb5/dsh.mal || true
+	rm $(DESTDIR)$(LIBDIR)/monetdb5/lib_dsh.so || true
+	rm $(DESTDIR)$(LIBDIR)/monetdb5/createdb/75_dsh.sql || true
+	rm $(DESTDIR)$(LIBDIR)/monetdb5/autoload/75_dsh.mal || true
 
-redo: clean lib_rmath.so install test
+redo: clean lib_dsh.so install test
 
 dist:
 	tar -c -j -f $(name)-$(version).tar.bz2 --transform "s,^,$(name)-$(version)/," `hg files -X .hgtags`
@@ -68,4 +58,4 @@ test:
 	monetdb release testt
 	monetdb set embedr=yes testt
 	monetdb set embedc=yes testt
-	mclient -d testt -s "select pnorm(1.96, 0, 1); create table temp (x double); insert into temp values (0.1); insert into temp values (0.2); select qgamma(x,2.0,1.0,1,0), qgamma(x*2,2.0,1.0,1,0) from temp; select rmath_poisson_ci(10,1), rmath_poisson_ci(10,2); select rmath_poisson_ci(value,1), rmath_poisson_ci(value,2) from (select 10 as value union select 11 as value) as t; select rmath_poisson_test(value,value*2,1.0,2) as pvalue from generate_series(cast(0.0 as double),5.0,1.0);" || echo Warning: check that MonetDB-gsl is not installed.
+	mclient -l mal -d testt < test.mal
