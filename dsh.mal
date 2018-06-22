@@ -5,50 +5,58 @@
 # Copyright 1997 - July 2008 CWI, August 2008 - 2016 MonetDB B.V.
 
 module dsh;
+module batdsh;
 
 # TODO add result for merged inputs that sets up correct properties
-command oid_segment_append(l:bat[:oid], r:bat[:oid]) (side:bat[:bit], lcand:bat[:oid], rcand:bat[:oid])
+command batdsh.oid_segment_append(l:bat[:oid], r:bat[:oid]) (side:bat[:bit], lcand:bat[:oid], rcand:bat[:oid])
 address DSHoid_segment_append
 comment "Append two sorted BATs per segments, whereas the segments are defined by equal values. This version generates a bit BAT to be used with dsh.bitmerge.";
 
-command oid_segment_append2(l:bat[:oid], r:bat[:oid]) (postproj:bat[:oid], lcand:bat[:oid], rcand:bat[:oid])
+command batdsh.oid_segment_append2(l:bat[:oid], r:bat[:oid]) (postproj:bat[:oid], lcand:bat[:oid], rcand:bat[:oid])
 address DSHoid_segment_append2
 comment "Append two sorted BATs per segments, whereas the segments are defined by equal values. This version produces a post-projection to be used after bat.append.";
 
-command bitmerge(side:bat[:bit], left:bat[:any_1], right:bat[:any_1]) :bat[:any_1]
+command batdsh.bitmerge(side:bat[:bit], left:bat[:any_1], right:bat[:any_1]) :bat[:any_1]
 address DSHbitmerge
 comment "Merge two BATs of different lengths together based on the bit information.";
 
-command oid_segment_zip(l:bat[:oid], r:bat[:oid]) (lcand:bat[:oid], rcand:bat[:oid])
+command batdsh.oid_segment_zip(l:bat[:oid], r:bat[:oid]) (lcand:bat[:oid], rcand:bat[:oid])
 address DSHoid_segment_zip
 comment "Zip two sorted BATs on the segments, which is the shortest prefix, based on equal values.";
 
-command reverse(i:bat[:any_1]) :bat[:oid]
+command batdsh.reverse(i:bat[:any_1]) :bat[:oid]
 address DSHreverse
 comment "Provide a mapping to reverse a BAT.";
 
-command oid_segment_reverse(i:bat[:oid]) :bat[:oid]
+command batdsh.oid_segment_reverse(i:bat[:oid]) :bat[:oid]
 address DSHoid_segment_reverse
 comment "Provide a mapping to reverse the segments of a BAT.";
 
-command win_fun_sum(d:bat[:bit], i:bat[:any_1], w:lng) :bat[:any_1]
+
+command batdsh.win_fun_sum(d:bat[:bit], i:bat[:any_1], w:lng) :bat[:any_1]
 address DSHwin_fun_sum
 comment "Sum window function, which can be used with the output of 'batsql.diff'.";
 
-command win_fun_min(d:bat[:bit], i:bat[:any_1], w:lng) :bat[:any_1]
+command batdsh.win_fun_min(d:bat[:bit], i:bat[:any_1], w:lng) :bat[:any_1]
 address DSHwin_fun_min
 comment "";
 
-command win_fun_max(d:bat[:bit], i:bat[:any_1], w:lng) :bat[:any_1]
+command batdsh.win_fun_max(d:bat[:bit], i:bat[:any_1], w:lng) :bat[:any_1]
 address DSHwin_fun_max
 comment "";
 
-command win_fun_avg(d:bat[:bit], i:bat[:any_1], w:lng) :bat[:any_1]
+command batdsh.win_fun_avg(d:bat[:bit], i:bat[:any_1], w:lng) :bat[:any_1]
 address DSHwin_fun_avg
 comment "";
 
+function batdsh.win_fun_sum(d:bat[:bit], i:bat[:any_1], w:bat[:lng]) :bat[:any_1];
+  (h, w0) := iterator.new(w);
+  ret := batdsh.win_fun_sum(d, i, w0);
+  return ret;
+end batdsh.win_fun_sum;
+
 # it's probably better to define this in the code generation step, to make use of sharing
-function dsh.win_fun_count(d:bat[:bit], w:lng) :bat[:int];
+function batdsh.win_fun_count(d:bat[:bit], w:lng) :bat[:int];
     rcnt:bat[:int] := nil;
     rn:bat[:int] := batsql.row_number(d, d, nil:bit);
     barrier ifpart := w <= 0;
@@ -61,6 +69,6 @@ function dsh.win_fun_count(d:bat[:bit], w:lng) :bat[:int];
     return rcnt;
 end dsh.win_fun_count;
 
-command win_fun_first_value(d:bat[:bit], i:bat[:any_1], w:lng) :bat[:any_1]
+command batdsh.win_fun_first_value(d:bat[:bit], i:bat[:any_1], w:lng) :bat[:any_1]
 address DSHwin_fun_first_value
 comment "";
