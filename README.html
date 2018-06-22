@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2018-06-23 Sat 00:27 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="viewport" content="width=device-width, initial-scale=1" />
+<title>MonetDB-dsh: MonetDB extension for window functions (exploratory).</title>
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Mark Clements" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="http://www.pirilampo.org/styles/readtheorg/css/readtheorg.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.js"></script>
+<script type="text/javascript" src="http://www.pirilampo.org/styles/readtheorg/js/readtheorg.js"></script>
+<style type="text/css">.abstract {max-width: 30em; margin-left: auto; margin-right: auto;}</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">MonetDB-dsh: MonetDB extension for window functions (exploratory).</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline1">Setup</a></li>
+<li><a href="#orgheadline2">Test data</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgheadline1" class="outline-2">
+<h2 id="orgheadline1">Setup</h2>
+<div class="outline-text-2" id="text-orgheadline1">
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(cd <span style="color: #8b2252;">"~/work"</span>)
+(shell-command <span style="color: #8b2252;">"monetdbd start ~/work/mydbfarm || true"</span>)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline2" class="outline-2">
+<h2 id="orgheadline2">Test data</h2>
+<div class="outline-text-2" id="text-orgheadline2">
+<div class="org-src-container">
+
+<pre class="src src-sql">s:bat[:oid] := bat.new(nil:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 1:oid);
+bat.append(s, 1:oid);
+bat.append(s, 1:oid);
+bat.append(s, 1:oid);
+bat.append(s, 2:oid);
+bat.append(s, 3:oid);
+bat.append(s, 3:oid);
+
+i:bat[:int] := bat.new(nil:int);
+bat.append(i, 0);
+bat.append(i, 1);
+bat.append(i, 2);
+bat.append(i, 3);
+bat.append(i, 4);
+bat.append(i, 5);
+bat.append(i, 6);
+bat.append(i, 7);
+bat.append(i, 8);
+bat.append(i, 9);
+bat.append(i, 10);
+bat.append(i, 11);
+bat.append(i, 12);
+
+d:bat[:bit] := batsql.diff(s);
+
+rsum:bat[:int] := dsh.win_fun_sum(d, i, 3:lng);
+
+rmin:bat[:int] := dsh.win_fun_min(d, i, 3:lng);
+rmax:bat[:int] := dsh.win_fun_max(d, i, 3:lng);
+
+# int avg with div
+ravg:bat[:int] := dsh.win_fun_avg(d, i, 3:lng);
+idbl := batcalc.dbl(i);
+ravgdbl:bat[:dbl] := dsh.win_fun_avg(d, idbl, 3:lng);
+
+rnum:bat[:int] := batsql.row_number(d, d, nil:bit);
+
+# simulate count with row number
+rcntsim:bat[:int] := batcalc.min(3, rnum);
+rcnt:bat[:int] := dsh.win_fun_count(d, 3:lng);
+
+rfst:bat[:int] := dsh.win_fun_first_value(d, i, 3:lng);
+
+io.print(s, d, i, rsum, rmin, rmax, ravg, ravgdbl, rnum, rcnt, rcntsim, rfst);
+</pre>
+</div>
+
+<pre class="example">
+#--------------------------#
+# t	t	t	t	t	t	t	t	t	t	t	t	t  # name
+# void	oid	bit	int	int	int	int	int	dbl	int	int	int	int  # type
+#--------------------------#
+[ 0@0,	0@0,	false,	0,	0,	0,	0,	0,	0,	1,	1,	1,	0  ]
+[ 1@0,	0@0,	false,	1,	1,	0,	1,	0,	0.5,	2,	2,	2,	0  ]
+[ 2@0,	0@0,	false,	2,	3,	0,	2,	1,	1,	3,	3,	3,	0  ]
+[ 3@0,	0@0,	false,	3,	6,	1,	3,	2,	2,	4,	3,	3,	1  ]
+[ 4@0,	0@0,	false,	4,	9,	2,	4,	3,	3,	5,	3,	3,	2  ]
+[ 5@0,	0@0,	false,	5,	12,	3,	5,	4,	4,	6,	3,	3,	3  ]
+[ 6@0,	1@0,	true,	6,	6,	6,	6,	6,	6,	1,	1,	1,	6  ]
+[ 7@0,	1@0,	false,	7,	13,	6,	7,	6,	6.5,	2,	2,	2,	6  ]
+[ 8@0,	1@0,	false,	8,	21,	6,	8,	7,	7,	3,	3,	3,	6  ]
+[ 9@0,	1@0,	false,	9,	24,	7,	9,	8,	8,	4,	3,	3,	7  ]
+[ 10@0,	2@0,	true,	10,	10,	10,	10,	10,	10,	1,	1,	1,	10  ]
+[ 11@0,	3@0,	true,	11,	11,	11,	11,	11,	11,	1,	1,	1,	11  ]
+[ 12@0,	3@0,	false,	12,	23,	11,	12,	11,	11.5,	2,	2,	2,	11  ]
+</pre>
+
+<ul class="org-ul">
+<li>Note: BATs do not persist between MAL sessions. The MAL code above can not be separated, as the intermediate values are lost.</li>
+</ul>
+
+
+<div class="org-src-container">
+
+<pre class="src src-sql">drop table if exists temp;
+
+create table temp as
+select s, cast(row_number() over() as double) as i 
+from (select cast(0 as oid) as s from sys.generate_series(0,6)
+union all select cast(1 as oid) from sys.generate_series(0,4)
+union all select cast(2 as oid) 
+union all select cast(3 as oid) union all select cast(3 as oid)) as t;
+
+<span style="color: #b22222;">-- select * from temp;</span>
+select *, dsh.diff(s) as d from temp;
+<span style="color: #b22222;">-- select *, dsh.win_fun_sum(d, i, three) from (select *, dsh.diff(s) as d, cast(3 as integer) as three from temp) as t; -- Program contains errors.:(NONE).multiplex</span>
+</pre>
+</div>
+
+<pre class="example">
+operation successful
+operation successful
++------+--------------------------+-------+
+| s    | i                        | d     |
++======+==========================+=======+
+|  0@0 |                        1 | false |
+|  0@0 |                        2 | false |
+|  0@0 |                        3 | false |
+|  0@0 |                        4 | false |
+|  0@0 |                        5 | false |
+|  0@0 |                        6 | false |
+|  1@0 |                        7 | true  |
+|  1@0 |                        8 | false |
+|  1@0 |                        9 | false |
+|  1@0 |                       10 | false |
+|  2@0 |                       11 | true  |
+|  3@0 |                       12 | true  |
+|  3@0 |                       13 | false |
++------+--------------------------+-------+
+13 tuples
+</pre>
+</div>
+</div>
+</div>
+</body>
+</html>
