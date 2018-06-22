@@ -11,14 +11,27 @@
 
 #+title: MonetDB-dsh: MonetDB extension for window functions (exploratory).
 
-* Setup
+* Introduction
 
-#+BEGIN_SRC emacs-lisp :results none
+This is an exploration of window functions in MonetDB using mal code by Moritz Bruder 
+[[https://www.monetdb.org/pipermail/users-list/2017-February/009709.html]].
+
+* Quick installation
+
+#+BEGIN_SRC bash :eval no
+git clone https://github.com/mclements/MonetDB-dsh.git
+cd MonetDB-dsh
+make
+sudo make install
+make test
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :results none :exports none
 (cd "~/work")
 (shell-command "monetdbd start ~/work/mydbfarm || true")
 #+END_SRC
 
-* Test data
+* Testing
 
 #+begin_src sql :engine mal :cmdline "-d testt" :results output :exports result
 s:bat[:oid] := bat.new(nil:oid);
@@ -136,4 +149,3 @@ operation successful
 +------+--------------------------+-------+
 13 tuples
 #+end_example
-

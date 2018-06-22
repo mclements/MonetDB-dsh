@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2018-06-23 Sat 00:27 -->
+<!-- 2018-06-23 Sat 00:43 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="viewport" content="width=device-width, initial-scale=1" />
 <title>MonetDB-dsh: MonetDB extension for window functions (exploratory).</title>
@@ -155,27 +155,41 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgheadline1">Setup</a></li>
-<li><a href="#orgheadline2">Test data</a></li>
+<li><a href="#orgheadline1">Introduction</a></li>
+<li><a href="#orgheadline2">Quick installation</a></li>
+<li><a href="#orgheadline3">Test data</a></li>
 </ul>
 </div>
 </div>
 
 <div id="outline-container-orgheadline1" class="outline-2">
-<h2 id="orgheadline1">Setup</h2>
+<h2 id="orgheadline1">Introduction</h2>
 <div class="outline-text-2" id="text-orgheadline1">
+<p>
+This is an exploration of window functions in MonetDB using mal code by Moritz Bruder 
+<a href="https://www.monetdb.org/pipermail/users-list/2017-February/009709.html">https://www.monetdb.org/pipermail/users-list/2017-February/009709.html</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline2" class="outline-2">
+<h2 id="orgheadline2">Quick installation</h2>
+<div class="outline-text-2" id="text-orgheadline2">
 <div class="org-src-container">
 
-<pre class="src src-emacs-lisp">(cd <span style="color: #8b2252;">"~/work"</span>)
-(shell-command <span style="color: #8b2252;">"monetdbd start ~/work/mydbfarm || true"</span>)
+<pre class="src src-bash">git clone https://github.com/mclements/MonetDB-dsh.git
+<span style="color: #483d8b;">cd</span> MonetDB-dsh
+make
+sudo make install
+make test
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgheadline2" class="outline-2">
-<h2 id="orgheadline2">Test data</h2>
-<div class="outline-text-2" id="text-orgheadline2">
+<div id="outline-container-orgheadline3" class="outline-2">
+<h2 id="orgheadline3">Test data</h2>
+<div class="outline-text-2" id="text-orgheadline3">
 <div class="org-src-container">
 
 <pre class="src src-sql">s:bat[:oid] := bat.new(nil:oid);
