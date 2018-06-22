@@ -1,10 +1,10 @@
-lib_rmath.la
-lib_rmath.so
-rmath.o
+lib_dsh.la
+lib_dsh.so
+dsh.o
 *~
 .monetdb
-rmath.mal
-??_rmath.sql
+dsh.mal
+??_dsh.sql
 README.html
 temp
 auto/
