@@ -9,162 +9,131 @@
 
 #+OPTIONS: H:3 num:nil html-postamble:nil
 
-#+title: MonetDB-rmath: MonetDB extension to use the Rmath library.
+#+title: MonetDB-dsh: MonetDB extension for window functions (exploratory).
 
-#+BEGIN_SRC emacs-lisp :exports none :results none
-;; (cd "/home/marcle/src/database/MonetDB-rmath")
+* Setup
+
+#+BEGIN_SRC emacs-lisp :results none
+(cd "~/work")
 (shell-command "monetdbd start ~/work/mydbfarm || true")
 #+END_SRC
 
-* Introduction
+* Test data
 
-An early version for MonetDB-rmath is now available. It includes approximately 90% of the functions in [[http://docs.rexamine.com/R-devel/Rmath_8h_source.html][Rmath.h]], including [rpdq] (norm|unif|gamma|beta|lnorm|chisq|nchisq|f|t|binom|cauchy|exp|geom|hyper|nbinom|pois|weibull|logis|wilcox|signrank) and another 65 functions. The current implementation uses [[https://www.gnu.org/software/m4/m4.html][m4]] for code generation and requires the r-mathlib package under Debian.
+#+begin_src sql :engine mal :cmdline "-d testt" :results output :exports result
+s:bat[:oid] := bat.new(nil:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 1:oid);
+bat.append(s, 1:oid);
+bat.append(s, 1:oid);
+bat.append(s, 1:oid);
+bat.append(s, 2:oid);
+bat.append(s, 3:oid);
+bat.append(s, 3:oid);
 
-* Quick installation
+i:bat[:int] := bat.new(nil:int);
+bat.append(i, 0);
+bat.append(i, 1);
+bat.append(i, 2);
+bat.append(i, 3);
+bat.append(i, 4);
+bat.append(i, 5);
+bat.append(i, 6);
+bat.append(i, 7);
+bat.append(i, 8);
+bat.append(i, 9);
+bat.append(i, 10);
+bat.append(i, 11);
+bat.append(i, 12);
 
-One can clone the GitHub repository and install using:
-#+BEGIN_SRC bash :eval no
-git clone https://github.com/mclements/MonetDB-rmath.git
-cd MonetDB-rmath
-make
-sudo make install
-#+END_SRC
+d:bat[:bit] := batsql.diff(s);
 
-* Some examples
+rsum:bat[:int] := dsh.win_fun_sum(d, i, 3:lng);
 
-You will then need to use a fresh database. An example script is:
-#+BEGIN_SRC sql :engine monetdb :cmdline "-d testt -e" :results both org :exports results
--- calculate the quantile and cumulative distribution function for a unit normals
-select qnorm(0.025,0,1), pnorm(-1.96,0,1);
--- calculate E(Z^2) for Z~Normal(0,1)
-select sum(R_pow(value,2)*0.01*dnorm(value,0,1)) from
-  sys.generate_series(-5.0,5.0,0.01);
--- random numbers
-select set_seed(1,2);
-select rpois(value*0+100) from sys.generate_series(1,10); -- ok
-select rpois(100) from sys.generate_series(1,3);  -- repeats the values:-<
+rmin:bat[:int] := dsh.win_fun_min(d, i, 3:lng);
+rmax:bat[:int] := dsh.win_fun_max(d, i, 3:lng);
+
+# int avg with div
+ravg:bat[:int] := dsh.win_fun_avg(d, i, 3:lng);
+idbl := batcalc.dbl(i);
+ravgdbl:bat[:dbl] := dsh.win_fun_avg(d, idbl, 3:lng);
+
+rnum:bat[:int] := batsql.row_number(d, d, nil:bit);
+
+# simulate count with row number
+rcntsim:bat[:int] := batcalc.min(3, rnum);
+rcnt:bat[:int] := dsh.win_fun_count(d, 3:lng);
+
+rfst:bat[:int] := dsh.win_fun_first_value(d, i, 3:lng);
+
+io.print(s, d, i, rsum, rmin, rmax, ravg, ravgdbl, rnum, rcnt, rcntsim, rfst);
 #+end_src
 
 #+RESULTS:
-#+BEGIN_SRC org
-select qnorm(0.025,0,1), pnorm(-1.96,0,1);
-+--------------------------+--------------------------+
-| L2                       | L4                       |
-+==========================+==========================+
-|      -1.9599639845400538 |     0.024997895148220428 |
-+--------------------------+--------------------------+
-1 tuple
-select sum(R_pow(value,2)*0.01*dnorm(value,0,1)) from
-  sys.generate_series(-5.0,5.0,0.01);
-+--------------------------+
-| L7                       |
-+==========================+
-|       0.9999845566522483 |
-+--------------------------+
-1 tuple
-select rpois(value*0+100) from sys.generate_series(1,10); -- ok
-+--------------------------+
-| L5                       |
-+==========================+
-|                       87 |
-|                       90 |
-|                       96 |
-|                      117 |
-|                       87 |
-|                       99 |
-|                       95 |
-|                       86 |
-|                      116 |
-+--------------------------+
-9 tuples
-select rpois(100) from sys.generate_series(1,3);  -- repeats the values:-<
-+--------------------------+
-| L5                       |
-+==========================+
-|                      128 |
-|                      128 |
-+--------------------------+
-2 tuples
+#+begin_example
+#--------------------------#
+# t	t	t	t	t	t	t	t	t	t	t	t	t  # name
+# void	oid	bit	int	int	int	int	int	dbl	int	int	int	int  # type
+#--------------------------#
+[ 0@0,	0@0,	false,	0,	0,	0,	0,	0,	0,	1,	1,	1,	0  ]
+[ 1@0,	0@0,	false,	1,	1,	0,	1,	0,	0.5,	2,	2,	2,	0  ]
+[ 2@0,	0@0,	false,	2,	3,	0,	2,	1,	1,	3,	3,	3,	0  ]
+[ 3@0,	0@0,	false,	3,	6,	1,	3,	2,	2,	4,	3,	3,	1  ]
+[ 4@0,	0@0,	false,	4,	9,	2,	4,	3,	3,	5,	3,	3,	2  ]
+[ 5@0,	0@0,	false,	5,	12,	3,	5,	4,	4,	6,	3,	3,	3  ]
+[ 6@0,	1@0,	true,	6,	6,	6,	6,	6,	6,	1,	1,	1,	6  ]
+[ 7@0,	1@0,	false,	7,	13,	6,	7,	6,	6.5,	2,	2,	2,	6  ]
+[ 8@0,	1@0,	false,	8,	21,	6,	8,	7,	7,	3,	3,	3,	6  ]
+[ 9@0,	1@0,	false,	9,	24,	7,	9,	8,	8,	4,	3,	3,	7  ]
+[ 10@0,	2@0,	true,	10,	10,	10,	10,	10,	10,	1,	1,	1,	10  ]
+[ 11@0,	3@0,	true,	11,	11,	11,	11,	11,	11,	1,	1,	1,	11  ]
+[ 12@0,	3@0,	false,	12,	23,	11,	12,	11,	11.5,	2,	2,	2,	11  ]
+#+end_example
+
++ Note: BATs do not persist between MAL sessions. The MAL code above can not be separated, as the intermediate values are lost.
+
+
+#+BEGIN_SRC sql :engine monetdb :cmdline "-d testt" :results output :exports result
+  drop table if exists temp;
+
+  create table temp as
+  select s, cast(row_number() over() as double) as i 
+  from (select cast(0 as oid) as s from sys.generate_series(0,6)
+  union all select cast(1 as oid) from sys.generate_series(0,4)
+  union all select cast(2 as oid) 
+  union all select cast(3 as oid) union all select cast(3 as oid)) as t;
+
+  -- select * from temp;
+  select *, dsh.diff(s) as d from temp;
+  -- select *, dsh.win_fun_sum(d, i, three) from (select *, dsh.diff(s) as d, cast(3 as integer) as three from temp) as t;
 #+END_SRC
 
-
-For the last example, a better approach would be to use [[https://www.monetdb.org/content/embedded-r-monetdb][embedded R]]. Continuing the example:
-
-
-#+BEGIN_SRC sql :engine monetdb :cmdline "-d testt -e" :results both org :exports results
-create or replace function set_random_seed(seed integer)
-  returns boolean language r { set.seed(seed); TRUE };
-create or replace function rpois2(n integer, mu double)
-  returns table(y integer) language r {data.frame(y=rpois(n,mu))};
-select set_random_seed(10);
-select * from rpois2(5,10);
-#+end_src 
-
 #+RESULTS:
-#+BEGIN_SRC org
-create or replace function set_random_seed(seed integer)
-  returns boolean language r { set.seed(seed); TRUE };
+#+begin_example
 operation successful
-create or replace function rpois2(n integer, mu double)
-  returns table(y integer) language r {data.frame(y=rpois(n,mu))};
 operation successful
-select set_random_seed(10);
-+-------+
-| L2    |
-+=======+
-| true  |
-+-------+
-1 tuple
-select * from rpois2(5,10);
-+------+
-| y    |
-+======+
-|   10 |
-|    9 |
-|    5 |
-|    8 |
-|    9 |
-+------+
-5 tuples
-#+END_SRC
-
-
-The functions allow for arguments that are scalars and BATs. Combinations of BATs and scalars are also supported when the BATs are the earlier arguments. The next step is to add further statistical tests. As examples, I have included: =rmath_poisson_ci(y,boundary)= for an exact Poisson confidence interval for count y for a specific boundary (1=left, 2=right) with default confidence level of 95%; and =rmath_poisson_test(y,t)= for count y and time exposed t, with the default null hypothesis that y/t=1:
-
-#+BEGIN_SRC sql :engine monetdb :cmdline "-d testt" :results both org :exports both
-select 10.0/9 as rate_ratio, rmath_poisson_ci(10,1)/9 as lci, rmath_poisson_ci(10,2)/9 as uci, rmath_poisson_test(10,9) as pvalue;
-#+end_src
-
-#+RESULTS:
-#+BEGIN_SRC org
-+------------+--------------------------+--------------------------+--------------------------+
-| rate_ratio | lci                      | uci                      | pvalue                   |
-+============+==========================+==========================+==========================+
-|      1.111 |       0.5328209662369371 |       2.0433728935575304 |       0.7364887199809547 |
-+------------+--------------------------+--------------------------+--------------------------+
-1 tuple
-#+END_SRC
-
-The equivalent R would be:
-
-#+BEGIN_SRC R :results output org :exports both
-poisson.test(10,9)
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_SRC org
-
-	Exact Poisson test
-
-data:  10 time base: 9
-number of events = 10, time base = 9, p-value = 0.7365
-alternative hypothesis: true event rate is not equal to 1
-95 percent confidence interval:
- 0.532821 2.043373
-sample estimates:
-event rate 
-  1.111111 
-
-#+END_SRC
-
++------+--------------------------+-------+
+| s    | i                        | d     |
++======+==========================+=======+
+|  0@0 |                        1 | false |
+|  0@0 |                        2 | false |
+|  0@0 |                        3 | false |
+|  0@0 |                        4 | false |
+|  0@0 |                        5 | false |
+|  0@0 |                        6 | false |
+|  1@0 |                        7 | true  |
+|  1@0 |                        8 | false |
+|  1@0 |                        9 | false |
+|  1@0 |                       10 | false |
+|  2@0 |                       11 | true  |
+|  3@0 |                       12 | true  |
+|  3@0 |                       13 | false |
++------+--------------------------+-------+
+13 tuples
+#+end_example
 
