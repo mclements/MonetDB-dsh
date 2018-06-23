@@ -50,8 +50,8 @@ address DSHwin_fun_avg
 comment "";
 
 function batdsh.win_fun_sum(d:bat[:bit], i:bat[:any_1], w:bat[:lng]) :bat[:any_1];
-  (h, w0) := iterator.new(w);
-  ret := batdsh.win_fun_sum(d, i, w0);
+  (h:lng, w0:any_1) := iterator.new(w);
+  ret:bat[:any_1] := batdsh.win_fun_sum(d, i, w0);
   return ret;
 end batdsh.win_fun_sum;
 

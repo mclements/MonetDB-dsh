@@ -4,7 +4,6 @@ dsh.o
 *~
 .monetdb
 dsh.mal
-??_dsh.sql
 temp
 auto/
 README.tex
