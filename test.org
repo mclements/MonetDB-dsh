@@ -1,0 +1,112 @@
+
+* Setup
+
+#+BEGIN_SRC emacs-lisp :results none
+(cd "~/work")
+(shell-command "monetdbd start ~/work/mydbfarm || true")
+#+END_SRC
+
+* Test data
+
+#+begin_src sql :engine monetdb :cmdline "-l sql -d testt" :results output org :exports result
+select 1;
+#+end_src
+
+#+RESULTS:
+#+BEGIN_SRC org
++------+
+| L2   |
++======+
+|    1 |
++------+
+1 tuple
+#+END_SRC
+
+
+#+begin_src sql :engine mal :cmdline "-d testt" :results output :exports result
+s:bat[:oid] := bat.new(nil:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 0:oid);
+bat.append(s, 1:oid);
+bat.append(s, 1:oid);
+bat.append(s, 1:oid);
+bat.append(s, 1:oid);
+bat.append(s, 2:oid);
+bat.append(s, 3:oid);
+bat.append(s, 3:oid);
+
+i:bat[:int] := bat.new(nil:int);
+bat.append(i, 0);
+bat.append(i, 1);
+bat.append(i, 2);
+bat.append(i, 3);
+bat.append(i, 4);
+bat.append(i, 5);
+bat.append(i, 6);
+bat.append(i, 7);
+bat.append(i, 8);
+bat.append(i, 9);
+bat.append(i, 10);
+bat.append(i, 11);
+bat.append(i, 12);
+io.print(s,i);
+#+end_src
+
+#+RESULTS:
+#+begin_example
+#--------------------------#
+# t	t	t  # name
+# void	oid	int  # type
+#--------------------------#
+[ 0@0,	0@0,	0  ]
+[ 1@0,	0@0,	1  ]
+[ 2@0,	0@0,	2  ]
+[ 3@0,	0@0,	3  ]
+[ 4@0,	0@0,	4  ]
+[ 5@0,	0@0,	5  ]
+[ 6@0,	1@0,	6  ]
+[ 7@0,	1@0,	7  ]
+[ 8@0,	1@0,	8  ]
+[ 9@0,	1@0,	9  ]
+[ 10@0,	2@0,	10  ]
+[ 11@0,	3@0,	11  ]
+[ 12@0,	3@0,	12  ]
+#+end_example
+
+#+begin_src sql :engine monetdb :cmdline "-l mal -d testt" :results output :exports result
+d:bat[:bit] := batsql.diff(s);
+
+io.print(s, d, i);
+#+end_src
+
+#+RESULTS:
+
+rsum:bat[:int] := dsh.win_fun_sum(d, i, 3:lng);
+
+rmin:bat[:int] := dsh.win_fun_min(d, i, 3:lng);
+rmax:bat[:int] := dsh.win_fun_max(d, i, 3:lng);
+
+# int avg with div
+ravg:bat[:int] := dsh.win_fun_avg(d, i, 3:lng);
+idbl := batcalc.dbl(i);
+ravgdbl:bat[:dbl] := dsh.win_fun_avg(d, idbl, 3:lng);
+
+rnum:bat[:int] := batsql.row_number(d, d, nil:bit);
+
+# simulate count with row number
+rcntsim:bat[:int] := batcalc.min(3, rnum);
+rcnt:bat[:int] := dsh.win_fun_count(d, 3:lng);
+
+rfst:bat[:int] := dsh.win_fun_first_value(d, i, 3:lng);
+
+io.print(s, d, i, rsum, rmin, rmax, ravg, ravgdbl, rnum, rcnt, rcntsim, rfst);
+#+end_src
+
+#+RESULTS:
+#+BEGIN_SRC org
+#+END_SRC
+
